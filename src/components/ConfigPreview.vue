@@ -130,6 +130,7 @@ function copyCode() {
   justify-content: center;
   padding: 5px;
   background-color: aliceblue;
+  width: 100%;
 }
 
 .toastPreview {
@@ -141,6 +142,8 @@ function copyCode() {
   padding: 12px;
   border-radius: 12px;
   min-height: 64px;
+  width: 100%;
+  max-width: 420px;
 }
 
 .icon {
@@ -155,6 +158,7 @@ function copyCode() {
 .content {
   display: grid;
   gap: 4px;
+  word-break: break-word;
 }
 
 
