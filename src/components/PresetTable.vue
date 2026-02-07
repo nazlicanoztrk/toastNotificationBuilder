@@ -9,15 +9,15 @@ const emit = defineEmits<{ (event: 'load', value: ToastNotification): void }>()
 const STORAGE_KEY = 'presets'
 
 const presetName = ref('')
-const presetsData = ref([])
+const presetsData = ref<Preset[]>([])
 const loading = ref(false)
 const errorMsg = ref('')
 
-function getLocal() {
+function getLocal(): Preset[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     console.log('raw', raw)
-    return raw ? JSON.parse(raw) : []
+    return raw ? (JSON.parse(raw) as Preset[]) : []
   } catch {
     return []
   }
@@ -37,7 +37,7 @@ async function refresh() {
     try {
       const { data, error } = await supabase
         .from('configtable')
-        .select('id,name,config')
+        .select('id,name,config,created_at')
         .order('created_at', { ascending: false })
 
       if (!error && data) {
@@ -46,10 +46,9 @@ async function refresh() {
           name: item.name,
           config: item.config,
           createdAt: item.created_at || new Date().toISOString()
-        }))
+        })) as Preset[]
       }
-    } catch {
-    }
+    } catch {}
   }
 
   loading.value = false
@@ -62,7 +61,8 @@ async function save() {
   errorMsg.value = ''
 
   const localList = getLocal()
-  const { id: _id, ...configNoId } = props.config
+  const { id: _id, ...configNoId } = props.config as any
+
   const localPreset: Preset = {
     id: String(Date.now()),
     name,
@@ -87,12 +87,12 @@ async function save() {
   }
 }
 
-function loadPreset(p: any) {
-  emit('load', p.config)
+function loadPreset(p: Preset) {
+  emit('load', p.config as ToastNotification)
 }
 
 async function removePreset(id: string) {
-  const next = (getLocal() as Preset[]).filter((p) => p.id !== id)
+  const next = getLocal().filter((p) => p.id !== id)
   setLocal(next)
   presetsData.value = next
 
@@ -100,8 +100,7 @@ async function removePreset(id: string) {
     try {
       await supabase.from('configtable').delete().eq('id', id)
       await refresh()
-    } catch {
-    }
+    } catch {}
   }
 }
 
